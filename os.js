@@ -18,18 +18,19 @@ function loadApps(){
 }
 
 function openApp(app){
+
   const win = document.createElement("div");
   win.className = "window";
-  win.style.top = "100px";
-  win.style.left = "100px";
+  win.style.top = "120px";
+  win.style.left = "150px";
   win.style.zIndex = z++;
 
   win.innerHTML = `
     <div class="window-header">
-      <span>${app.name}</span>
-      <div>
-        <button onclick="minimizeWindow(this)">_</button>
-        <button onclick="closeWindow(this)">X</button>
+      <div>${app.name}</div>
+      <div class="window-controls">
+        <div class="control-btn min" onclick="minimizeWindow(this)"></div>
+        <div class="control-btn close" onclick="closeWindow(this)"></div>
       </div>
     </div>
     <iframe src="${app.url}"></iframe>
@@ -38,12 +39,12 @@ function openApp(app){
   makeDraggable(win);
   document.body.appendChild(win);
 
-  addToTaskbar(app, win);
+  addToDock(app, win);
 }
 
 function closeWindow(btn){
   const win = btn.closest(".window");
-  removeFromTaskbar(win.dataset.id);
+  removeFromDock(win.dataset.id);
   win.remove();
 }
 
@@ -52,23 +53,23 @@ function minimizeWindow(btn){
   win.style.display = "none";
 }
 
-function addToTaskbar(app, win){
+function addToDock(app, win){
   const id = Date.now();
   win.dataset.id = id;
 
-  const icon = document.createElement("div");
+  const icon = document.createElement("img");
+  icon.src = app.icon;
   icon.className = "taskbar-icon";
-  icon.innerText = app.name;
-  icon.onclick = ()=> {
+  icon.onclick = ()=>{
     win.style.display = "flex";
     win.style.zIndex = z++;
   };
 
-  document.getElementById("taskbar-apps").appendChild(icon);
+  document.getElementById("taskbar").appendChild(icon);
   taskbarApps[id] = icon;
 }
 
-function removeFromTaskbar(id){
+function removeFromDock(id){
   if(taskbarApps[id]){
     taskbarApps[id].remove();
     delete taskbarApps[id];
@@ -83,6 +84,7 @@ function makeDraggable(win){
     down=true;
     offsetX = e.clientX - win.offsetLeft;
     offsetY = e.clientY - win.offsetTop;
+    win.style.zIndex = z++;
   };
 
   document.onmouseup = ()=> down=false;
@@ -93,26 +95,5 @@ function makeDraggable(win){
     win.style.top = (e.clientY - offsetY)+"px";
   };
 }
-
-function refreshDesktop(){
-  loadApps();
-}
-
-document.getElementById("desktop").addEventListener("contextmenu", e=>{
-  e.preventDefault();
-  const menu = document.getElementById("context-menu");
-  menu.style.left = e.pageX+"px";
-  menu.style.top = e.pageY+"px";
-  menu.classList.remove("hidden");
-});
-
-document.body.onclick = ()=>{
-  document.getElementById("context-menu").classList.add("hidden");
-};
-
-setInterval(()=>{
-  document.getElementById("clock").innerText =
-    new Date().toLocaleTimeString();
-},1000);
 
 loadApps();
