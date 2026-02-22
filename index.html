@@ -1,1 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AstralOS</title>
+<style>
+body{
+  margin:0;
+  background:#0f172a;
+  font-family:sans-serif;
+  overflow:hidden;
+  color:white;
+}
 
+#desktop{
+  width:100vw;
+  height:100vh;
+  position:absolute;
+  display:flex;
+  flex-wrap:wrap;
+  padding:20px;
+  gap:20px;
+}
+
+.icon{
+  width:80px;
+  text-align:center;
+  cursor:pointer;
+}
+
+.icon img{
+  width:64px;
+  height:64px;
+  border-radius:12px;
+}
+
+.window{
+  position:absolute;
+  width:800px;
+  height:500px;
+  background:#1e293b;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 0 20px black;
+}
+
+.window-header{
+  background:#334155;
+  padding:8px;
+  cursor:move;
+  display:flex;
+  justify-content:space-between;
+}
+
+.window iframe{
+  flex:1;
+  border:none;
+}
+
+#taskbar{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  height:40px;
+  background:#111827;
+}
+</style>
+</head>
+<body>
+
+<div id="desktop"></div>
+<div id="taskbar"></div>
+
+<script>
+let z = 1;
+
+/* ===== EDIT YOUR APPS HERE ===== */
+
+const APPS = [
+
+  {
+    name: "Slope",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/3/3e/Google_Chrome_icon_%282011%29.png",
+    url: "https://example.com",
+    type: "iframe"
+  },
+
+  {
+    name: "Tetris",
+    icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Tetris_logo.svg/512px-Tetris_logo.svg.png",
+    url: "https://example.com",
+    type: "iframe"
+  }
+
+];
+
+/* ================================= */
+
+/* Create desktop icons */
+function loadApps(){
+  const desk = document.getElementById("desktop");
+  APPS.forEach(app=>{
+    const icon = document.createElement("div");
+    icon.className = "icon";
+    icon.innerHTML = `
+      <img src="${app.icon}">
+      <div>${app.name}</div>
+    `;
+    icon.onclick = ()=> openApp(app);
+    desk.appendChild(icon);
+  });
+}
+
+function openApp(app){
+  const win = document.createElement("div");
+  win.className = "window";
+  win.style.top = "100px";
+  win.style.left = "100px";
+  win.style.zIndex = z++;
+
+  win.innerHTML = `
+    <div class="window-header">
+      <span>${app.name}</span>
+      <button onclick="this.parentElement.parentElement.remove()">X</button>
+    </div>
+    <iframe src="${app.url}"></iframe>
+  `;
+
+  makeDraggable(win);
+  document.body.appendChild(win);
+}
+
+function makeDraggable(win){
+  const header = win.querySelector(".window-header");
+  let offsetX, offsetY, down=false;
+
+  header.onmousedown = e=>{
+    down=true;
+    offsetX = e.clientX - win.offsetLeft;
+    offsetY = e.clientY - win.offsetTop;
+  };
+
+  document.onmouseup = ()=> down=false;
+
+  document.onmousemove = e=>{
+    if(!down) return;
+    win.style.left = (e.clientX - offsetX)+"px";
+    win.style.top = (e.clientY - offsetY)+"px";
+  };
+}
+
+loadApps();
+</script>
+
+</body>
+</html>
